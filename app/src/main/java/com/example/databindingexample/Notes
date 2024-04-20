@@ -1,0 +1,121 @@
+----------------------------- Data Binding ----------------------------------------
+
+change-1:
+
+The Data Binding Library  offers a flexible and powerful way to bind data to your UIs. It is a technique that allows you to bind UI components in your layout XML files directly to data sources in your app's code.
+Data binding can improve performance by reducing the number of findViewById() calls, which can be costly.
+
+* Data Binding Library has "DataBindingUtil" class, which contains static methods for inflating layouts with data binding and creating binding instances for those layouts.
+* method of DataBindingUtil:-
+   1. inflate(LayoutInflater inflater, int layoutId, ViewGroup parent, boolean attachToParent) :-
+      Inflates a binding layout and returns the newly-created binding for that layout.  This means that you can create instances of binding classes associated with these layouts,
+      which provide direct access to the views in the layout and the data variables defined in the layout's <data> block.
+      eg.- val listItemBinding = DataBindingUtil.inflate(layoutInflater, R.layout.list_item, viewGroup, false)
+
+   2. setContentView(Activity activity, int layoutId) :- Set the Activity's content view to the given layout and return the associated binding.
+      This method inflates the specified layout and returns an instance of the corresponding binding class, which you can use to access the views and bind data.
+
+
+
+---- How to use this:-
+step-1: Add dependency to gradle.
+
+step-2: create the object or entity.
+       eg.- data class User(val firstName: String, val lastName: String)
+
+step-3: use data binding layout in xml file. data binding layout start with a root tag of "layout", followed by a "data" element and a view root element.
+      eg.-
+      <?xml version="1.0" encoding="utf-8"?>
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">   //data binding layout
+         <data>                                                             // here we are creating data variable name "user" or type "User" class. The user variable within data describes a property that can be used within this layout. "com.example.User"
+             <variable name="user" type="com.example.User"/>
+         </data>
+         <LinearLayout                                                      // this is the normal xml ui layout that we use to display
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+             <TextView android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@{user.firstName}"/>                        // Expressions within the layout are written in the attribute properties using the @{} syntax. In the following example, the TextView text is set to the firstName property of the user variable.
+             <TextView android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@{user.lastName}"/>                        // similar to the firstName textView.
+         </LinearLayout>
+      </layout>
+
+
+      From the perspective of data binding, these two classes are equivalent. The expression @{user.firstName} used for the android:text attribute accesses the firstName field in the former class and the getFirstName() method in the latter class.
+      It is also resolved to firstName(), if that method exists.
+
+step-4 : The Data Binding Library automatically generates the classes required to bind the views in the layout with your data objects. The class is
+ generated for each layout file. By default, the name of the class is based on the name of the layout file.  For example, the preceding layout filename
+ is activity_main.xml, so the corresponding generated binding class is ActivityMainBinding.
+
+ This class holds all the bindings from the layout properties—for example, the user variable—to the layout's views and knows how to assign values for the binding expressions. The binding is generally created
+ in onCreate() function as:
+
+ override fun onCreate(savedInstanceState: Bundle?) {
+     super.onCreate(savedInstanceState)
+
+     val binding: ActivityMainBinding = DataBindingUtil.setContentView(
+             this, R.layout.activity_main)
+
+     binding.user = User("Test", "User")
+ }
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+change -2: In this project , we have a text view and a button, and we have used view Model which use a live data, and when button is clicked,
+it change the text of textView. for this we have codded it manually as we had in MainActivity comment part of change-2.
+Now to use data binding. we have to use some expression for the reference:
+
+* Property references :- for reference of property (firstName) of class (user) , we use expression in format:- android:text="@{user.firstName}"
+
+* Method references :- lets say we have a method in a class "MyHandlers", and we have to use this method to handle the event:
+  eg-
+  class MyHandlers {
+      fun onClickFriend(view: View) { ... }
+  }
+  then we use the reference like this:
+
+  <?xml version="1.0" encoding="utf-8"?>
+  <layout xmlns:android="http://schemas.android.com/apk/res/android">
+     <data>
+         <variable name="handlers" type="com.example.MyHandlers"/>           // here we have made a variable of class "MyHandlers"
+         <variable name="user" type="com.example.User"/>                     // here we have made a variable of class "User"
+     </data>
+     <LinearLayout
+         android:orientation="vertical"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent">
+         <TextView android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="@{user.firstName}"
+             android:onClick="@{handlers::onClickFriend}"/>                    // here we have passed reference of method
+     </LinearLayout>
+  </layout>
+
+  The major difference between method references and listener bindings is that the actual listener implementation is created when the data is bound,
+  not when the event is triggered. If you prefer to evaluate the expression when the event happens, use listener bindings.
+
+ * Listener Binding :- Listener bindings are binding expressions that run when an event happens. They are similar to method references, but they let you run arbitrary data binding expressions.
+    eg.-
+    class Presenter {
+        fun onSaveClick(task: Task){}
+    }
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <layout xmlns:android="http://schemas.android.com/apk/res/android">
+        <data>
+            <variable name="task" type="com.android.example.Task" />
+            <variable name="presenter" type="com.android.example.Presenter" />
+        </data>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent">
+            <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:onClick="@{() -> presenter.onSaveClick(task)}" />
+        </LinearLayout>
+    </layout>
+
+    When a callback is used in an expression, data binding automatically creates the necessary listener and registers it for the event.
+    When the view fires the event, data binding evaluates the given expression. As with regular binding expressions, you get the null and thread safety of data binding while these listener expressions are being evaluated.
+
