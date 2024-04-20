@@ -119,3 +119,15 @@ Now to use data binding. we have to use some expression for the reference:
     When a callback is used in an expression, data binding automatically creates the necessary listener and registers it for the event.
     When the view fires the event, data binding evaluates the given expression. As with regular binding expressions, you get the null and thread safety of data binding while these listener expressions are being evaluated.
 
+ As to observe the liveData, we need "lifecycleOwner" which is the context of activity. and we are not using manual observe coding,
+ so we have to set lifecycleOwner in binding as :
+        binding.lifecycleOwner=this
+
+ Thus for using data binding in this project , we created a variable of "MainViewModel" in activity_2_main.xml and used the expression for event respectively:
+ for onClick() of button : android:onClick="@{()->mainViewModel.updateQuote()}"
+ for setting text of textView : android:text="@{mainViewModel.quoteLiveData}"
+
+ Now we saw how to display live data to textView. Thus this is called one way binding. If we have a edit view which take text and you
+ have to use this text to display on textView. This is called 2 way binding.
+
+ For this we add a editView and add text as: android:text="@={mainViewModel.quoteLiveData}"
